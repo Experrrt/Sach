@@ -1,7 +1,7 @@
 package sach;
 
-public class App {
+public class Hra {
     public static void main(String[] args) throws Exception {
-        Gui gui = new Gui();
+        new Gui().spustiHru();
     }
 }

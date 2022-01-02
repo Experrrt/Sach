@@ -1,65 +1,94 @@
 package sach.Figurky;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import sach.Figurka;
+import sach.Vec2;
 
 public class Strelec extends Figurka {
-    public Strelec(int x, int y, Color color, int team) {
-        super(x, y, color, team);
+    public Strelec(int x, int y, int team) {
+        super(x, y, team);
+        this.obrazokFigurkyC = this.nacitajObrazok("strelecC.png");
+        this.obrazokFigurkyB = this.nacitajObrazok("strelecB.png");
+        typ = "Strelec";
+        hodnota = 30;
     }
 
     @Override
-    public boolean skontrolujPohyb(int newX, int newY, ArrayList<Figurka> listFiguriek) {
-        if (newX > this.x && newY > this.y
-                && newX - this.x == newY - this.y) {
-            for (int i = 1; i < newX - this.x; i++) {
-                for (int j = 0; j < listFiguriek.size(); j++) {
-                    if (listFiguriek.get(j) == this) {
-                        continue;
-                    } else if (this.x + i == listFiguriek.get(j).x && this.y + i == listFiguriek.get(j).y) {
-                        return false;
-                    }
+    public void vypocitajDeathZone(Figurka[][] hraciePole) {
+        deathZone.clear();
+        kombinacie = this.generateKomb(new int[] { 1, -1 }, true);
+
+        // for (int[] combination : kombinacie) {
+        // System.out.println(Arrays.toString(combination));
+        // }
+        // System.out.println("-----");
+
+        // for (int j = 0; j < hraciePole.length; j++) {
+
+        for (int j = 0; j < kombinacie.size(); j++) {
+            int pX = kombinacie.get(j)[0], pY = kombinacie.get(j)[1];
+            for (int i = 0; i < 8; i++) {
+                if ((this.x + pX * i) >= 8 || (this.x + pX * i) < 0 || this.y + pY * i >= 8 || this.y + pY * i < 0) {
+                    break;
+                }
+                if (hraciePole[this.y + pY * i][this.x + pX * i] == this) {
+                    continue;
+                }
+                if (hraciePole[this.y + pY * i][this.x + pX * i] == null) {
+                    deathZone.add(new Vec2(this.y + pY * i, this.x + pX * i));
+                } else if (hraciePole[this.y + pY * i][this.x + pX * i].team != this.team) {
+                    deathZone.add(new Vec2(this.y + pY * i, this.x + pX * i));
+                    break;
+                } else {
+                    break;
                 }
             }
-            return true;
-        } else if (newX < this.x && newY < this.y
-                && this.x - newX == this.y - newY) {
-            for (int i = 1; i < this.x - newX; i++) {
-                for (int j = 0; j < listFiguriek.size(); j++) {
-                    if (listFiguriek.get(j) == this) {
-                        continue;
-                    } else if (this.x - i == listFiguriek.get(j).x && this.y - i == listFiguriek.get(j).y) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        } else if (newX > this.x && newY < this.y
-                && newX - this.x == this.y - newY) {
-            for (int i = 1; i < newX - this.x; i++) {
-                for (int j = 0; j < listFiguriek.size(); j++) {
-                    if (listFiguriek.get(j) == this) {
-                        continue;
-                    } else if (this.x + i == listFiguriek.get(j).x && this.y - i == listFiguriek.get(j).y) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        } else if (newX < this.x && newY > this.y
-                && this.x - newX == newY - this.y) {
-            for (int i = 1; i < this.x - newX; i++) {
-                for (int j = 0; j < listFiguriek.size(); j++) {
-                    if (listFiguriek.get(j) == this) {
-                        continue;
-                    } else if (this.x - i == listFiguriek.get(j).x && this.y + i == listFiguriek.get(j).y) {
-                        return false;
-                    }
-                }
-            }
-            return true;
         }
-        return false;
+        // for (int i = 0; i < 8; i++) {
+        // if (this.x + 1 * i >= 8 || this.y - 1 * i < 0) {
+        // break;
+        // }
+        // if (hraciePole[this.y - 1 * i][this.x + 1 * i] == this) {
+        // continue;
+        // }
+        // if (hraciePole[this.y - 1 * i][this.x + 1 * i] == null) {
+        // deathZone.add(new Vec2(this.y - 1 * i, this.x + 1 * i));
+        // } else if (hraciePole[this.y - 1 * i][this.x + 1 * i].team != this.team) {
+        // deathZone.add(new Vec2(this.y - 1 * i, this.x + 1 * i));
+        // break;
+        // } else {
+        // break;
+        // }
+        // }
+        // for (int i = 0; i < 8; i++) {
+        // if (this.x - 1 * i < 0 || this.y - 1 * i < 0) {
+        // break;
+        // }
+        // if (hraciePole[this.y - 1 * i][this.x - 1 * i] == this) {
+        // continue;
+        // }
+        // if (hraciePole[this.y - 1 * i][this.x - 1 * i] == null) {
+        // deathZone.add(new Vec2(this.y - 1 * i, this.x - 1 * i));
+        // } else if (hraciePole[this.y - 1 * i][this.x - 1 * i].team != this.team) {
+        // deathZone.add(new Vec2(this.y - 1 * i, this.x - 1 * i));
+        // break;
+        // } else {
+        // break;
+        // }
+        // }
+        // for (int i = 0; i < 8; i++) {
+        // if (this.x - 1 * i < 0 || this.y + 1 * i >= 8) {
+        // break;
+        // }
+        // if (hraciePole[this.y + 1 * i][this.x - 1 * i] == this) {
+        // continue;
+        // }
+        // if (hraciePole[this.y + 1 * i][this.x - 1 * i] == null) {
+        // deathZone.add(new Vec2(this.y + 1 * i, this.x - 1 * i));
+        // } else if (hraciePole[this.y + 1 * i][this.x - 1 * i].team != this.team) {
+        // deathZone.add(new Vec2(this.y + 1 * i, this.x - 1 * i));
+        // break;
+        // } else {
+        // break;
+        // }
+        // }
     }
 }

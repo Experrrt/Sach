@@ -1,35 +1,57 @@
 package sach.Figurky;
 
-import java.awt.Color;
 import java.util.ArrayList;
 
-import sach.Figurka;
+import sach.Vec2;
 
 public class Pesiak extends Figurka {
-    public Pesiak(int x, int y, Color color, int team) {
-        super(x, y, color, team);
+    public Pesiak(int x, int y, int team) {
+        super(x, y, team);
+        this.obrazokFigurkyC = this.nacitajObrazok("pesiakC.png");
+        this.obrazokFigurkyB = this.nacitajObrazok("pesiakB.png");
+        typ = "Pesiak";
+        hodnota = 10;
+        pesiakPohyb = new ArrayList<Vec2>();
     }
 
     @Override
-    public boolean skontrolujPohyb(int newX, int newY, ArrayList<Figurka> listFiguriek) {
-        if ((x == newX && y + 2 - 4 * team == newY && this.y == 1 + team * 5)
-                || (x == newX && y + 1 - 2 * team == newY)) {
-            for (int i = 0; i < listFiguriek.size(); i++) {
-                if (listFiguriek.get(i).x == newX && listFiguriek.get(i).y == newY) {
-                    return false;
-                }
+    public boolean skontrolujPohyb(int newX, int newY, Figurka[][] hraciePole) {
+        for (int i = 0; i < deathZone.size(); i++) {
+            if (deathZone.get(i).getY() == newY && deathZone.get(i).getX() == newX
+                    && hraciePole[deathZone.get(i).getY()][deathZone.get(i).getX()] != null) {
+                return true;
             }
-            return true;
-        } else if (x + 1 == newX && y + 1 - 2 * team == newY || x - 1 == newX && y + 1 - 2 * team == newY) {
-            for (int i = 0; i < listFiguriek.size(); i++) {
-                if (listFiguriek.get(i) == this) {
-                    continue;
-                } else if (listFiguriek.get(i).x == newX && listFiguriek.get(i).y == newY) {
-                    return true;
-                }
+        }
+        for (int i = 0; i < pesiakPohyb.size(); i++) {
+            if (pesiakPohyb.get(i).getY() == newY && pesiakPohyb.get(i).getX() == newX) {
+                return true;
             }
-            return false;
-        } else
-            return false;
+        }
+        return false;
+    }
+
+    @Override
+    public void vypocitajDeathZone(Figurka[][] hraciePole) {
+        deathZone.clear();
+        pesiakPohyb.clear();
+        if (((team == 1) ? this.y + 1 - 2 * team >= 0 : this.y + 1 - 2 * team < 8) && this.x + 1 < 8
+                && (hraciePole[this.y + 1 - 2 * team][this.x + 1] == null
+                        || hraciePole[this.y + 1 - 2 * team][this.x + 1].team != this.team)) {
+            deathZone.add(new Vec2(this.y + 1 - 2 * team, this.x + 1));
+        } else if (((team == 1) ? this.y + 1 - 2 * team >= 0 : this.y + 1 - 2 * team < 8) && this.x - 1 >= 0
+                && (hraciePole[this.y + 1 - 2 * team][this.x - 1] == null
+                        || hraciePole[this.y + 1 - 2 * team][this.x - 1].team != this.team)) {
+            deathZone.add(new Vec2(this.y + 1 - 2 * team, this.x - 1));
+        }
+        if (this.y + 1 - 2 * team >= 0 && this.y + 1 - 2 * team < 8
+                && hraciePole[this.y + 1 - 2 * team][this.x] == null) {
+            pesiakPohyb.add(new Vec2(this.y + 1 - 2 * team, this.x));
+            if (this.y + 2 - 4 * team >= 0 && this.y + 2 - 4 * team < 8 && this.y == 1 +
+                    team * 5
+                    && hraciePole[this.y + 2 - 4 * team][this.x] == null) {
+                pesiakPohyb.add(new Vec2(this.y + 2 - 4 * team, this.x));
+            }
+        }
+
     }
 }

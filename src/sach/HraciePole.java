@@ -1,77 +1,167 @@
 package sach;
 
-import java.awt.Color;
-import java.text.BreakIterator;
-import java.util.ArrayList;
-
 import sach.Figurky.*;
 
+import java.util.ArrayList;
+
 public class HraciePole {
-    Figurka[][] pole;
-    private Figurka zobrataFigurka;
-    Figurka pesiak2 = new Pesiak(2, 6, Color.GREEN, 1);
-    Figurka pesiak = new Pesiak(5, 3, Color.PINK, 0);
-    Figurka strelec = new Strelec(3, 1, Color.red, 0);
-    Figurka kon = new Kon(6, 4, Color.yellow, 1);
-    Figurka veza = new Veza(0, 0, Color.ORANGE, 0);
-    ArrayList<Figurka> listFiguriek = new ArrayList<Figurka>();
+
+    Figurka[][] hraciePole;
+    ArrayList<Figurka> vypadnuteFigurky;
+    boolean koniecHry, vyhernyTeam = false;
+    private ArrayList<Figurka> figurkyNaPoly;
+    Figurka zobrataFigurka;
+    boolean teamNaRade = true;
+    ArrayList<Vec2> deathZoneTeamC = new ArrayList<Vec2>();;
+    ArrayList<Vec2> deathZoneTeamB = new ArrayList<Vec2>();;
+    Client client = new Client();
+    AI ai = new AI();
 
     public HraciePole() {
-        pole = new Figurka[8][8];
-        listFiguriek.add(pesiak2);
-        listFiguriek.add(pesiak);
-        listFiguriek.add(strelec);
-        listFiguriek.add(kon);
-        listFiguriek.add(veza);
-        updatniPole();
+        hraciePole = new Figurka[8][8];
+        figurkyNaPoly = new ArrayList<Figurka>();
+        vypadnuteFigurky = new ArrayList<Figurka>();
+        new HracieMody().nacitajFigurky(hraciePole, figurkyNaPoly);
+        // new HracieMody().nacitajFigurky(hraciePole, vypadnuteFigurky);
+        prepocitajDeathZone();
     }
 
-    public void skontrolujKliknutie(java.awt.event.MouseEvent e) {
-        for (int i = 0; i < pole.length; i++) {
-            for (int j = 0; j < pole.length; j++) {
-                if (pole[i][j] != null
-                        && pole[i][j].x * 100 < e.getX()
-                        && (pole[i][j].x * 100 + 100) > e.getX()
-                        && (pole[i][j].y * 100) < e.getY()
-                        && (pole[i][j].y * 100 + 100) > e.getY()) {
-                    zobrataFigurka = pole[i][j];
-                }
-            }
+    public Figurka skontrolujKliknutie(int klikX, int klikY) {
+        if (hraciePole[klikY][klikX] != null && hraciePole[klikY][klikX].team == ((teamNaRade) ? 1 : 0)) {
+            zobrataFigurka = hraciePole[klikY][klikX];
+            return zobrataFigurka;
+        }
+        return null;
+    }
+
+    public void prepocitajDeathZone() {
+        for (int i = 0; i < figurkyNaPoly.size(); i++) {
+            figurkyNaPoly.get(i).vypocitajDeathZone(hraciePole);
         }
     }
 
-    public void updatniPole() {
-        pole = new Figurka[8][8];
-        for (int i = 0; i < listFiguriek.size(); i++) {
-            pole[listFiguriek.get(i).y][listFiguriek.get(i).x] = listFiguriek.get(i);
+    public void aiTah() {
+        Vec2 newS = new Vec2();
+        if (teamNaRade) {
+            zobrataFigurka = client.spravTah(hraciePole, newS);
+            premiestniFigurku(newS.getX(), newS.getY());
+        } else if (!teamNaRade) {
+            zobrataFigurka = ai.spravTah(hraciePole, newS, figurkyNaPoly);
+            premiestniFigurku(newS.getY(), newS.getX());
         }
     }
 
-    public void premiestniFigurku(java.awt.event.MouseEvent e) {
-        int newX = e.getX() / 100;
-        int newY = e.getY() / 100;
+    public void skontrolujOdkliknutie(int newX, int newY) {
+        if (teamNaRade) {
+            premiestniFigurku(newX, newY);
+        }
+    }
 
+    // && zobrataFigurka.team == ((teamNaRade) ? 1 : 0)
+    public void premiestniFigurku(int newX, int newY) {
         if (newX < 8 && newY < 8 && newX >= 0 && newY >= 0
                 && zobrataFigurka != null
-                && zobrataFigurka.skontrolujPohyb(newX, newY, listFiguriek)) {
-            if (pole[newY][newX] != null) {
-                if (pole[newY][newX].team == zobrataFigurka.team) {
+                && zobrataFigurka.skontrolujPohyb(newX, newY, hraciePole)
+                && zobrataFigurka.team == ((teamNaRade) ? 1 : 0)) {//
+            if (hraciePole[newY][newX] != null) {
+                if (hraciePole[newY][newX].team == zobrataFigurka.team) {
+                    zobrataFigurka = null;
+                    aiTah();
                     return;
+                } else {
+                    vypadnuteFigurky.add(hraciePole[newY][newX]);
+                    for (int i = 0; i < figurkyNaPoly.size(); i++) {
+                        if (newX == figurkyNaPoly.get(i).x && newY == figurkyNaPoly.get(i).y) {
+                            figurkyNaPoly.remove(i);
+                            break;
+                        }
+                    }
                 }
             }
-            for (int i = 0; i < listFiguriek.size(); i++) {
-                if (listFiguriek.get(i).x == newX
-                        && listFiguriek.get(i).y == newY
-                        && listFiguriek.get(i) != zobrataFigurka) {
-                    listFiguriek.remove(i);
-                    break;
-                }
-            }
+            hraciePole[newY][newX] = zobrataFigurka;
+            hraciePole[zobrataFigurka.y][zobrataFigurka.x] = null;
             zobrataFigurka.setX(newX);
             zobrataFigurka.setY(newY);
-
-            updatniPole();
+            prepocitajDeathZone();
+            koniecHry = skontrolujKoniecHry();
+            teamNaRade = !teamNaRade;
         }
         zobrataFigurka = null;
+        aiTah();
+    }
+
+    public boolean skontrolujKoniecHry() {
+        ArrayList<Figurka> pKon, pKral, pPesiak, pStrelec;
+        pKon = new ArrayList<>();
+        pKral = new ArrayList<>();
+        pPesiak = new ArrayList<>();
+        pStrelec = new ArrayList<>();
+        deathZoneTeamC.clear();
+        deathZoneTeamB.clear();
+
+        for (int i = 0; i < figurkyNaPoly.size(); i++) {
+            switch (figurkyNaPoly.get(i).typ) {
+                case "Kon":
+                    pKon.add(figurkyNaPoly.get(i));
+                    break;
+                case "Kral":
+                    pKral.add(figurkyNaPoly.get(i));
+                    break;
+                case "Pesiak":
+                    pPesiak.add(figurkyNaPoly.get(i));
+                    break;
+                case "Strelec":
+                    pStrelec.add(figurkyNaPoly.get(i));
+                    break;
+            }
+            if (figurkyNaPoly.get(i).team == 0) {
+                deathZoneTeamC.addAll(figurkyNaPoly.get(i).deathZone);
+            } else {
+                deathZoneTeamB.addAll(figurkyNaPoly.get(i).deathZone);
+            }
+        }
+
+        // remiza
+        if (figurkyNaPoly.size() == 2 && pKral.size() == 2) {
+            return true;
+        } else if (figurkyNaPoly.size() == 3 && (pKon.size() == 1 || pStrelec.size() == 1) && pKral.size() == 2) {
+            return true;
+        } else if ((figurkyNaPoly.size() == 4 && (pKon.size() <= 2 || pStrelec.size() <= 2) && pKral.size() == 2)
+                && (pKon.size() == 2 && pKon.get(0).team != pKon.get(1).team
+                        || pKon.size() == 1 && pStrelec.size() == 1 && pKon.get(0).team != pStrelec.get(0).team
+                        || pStrelec.size() == 2 && pStrelec.get(0).team != pStrelec.get(1).team)) {
+            return true;
+        } else if (figurkyNaPoly.size() == 4 && pKon.size() == 2 && pKon.get(0).team == pKon.get(1).team
+                && pKral.size() == 2) {
+            return true;
+        }
+        // prehra
+        for (int y = 0; y < pKral.size(); y++) {
+            int zabratePolicka = 0;
+            Figurka kralNaMat = pKral.get(y);
+            Boolean mat = false;
+            ArrayList<Vec2> deathZoneTeamu = (kralNaMat.team == 1) ? deathZoneTeamC : deathZoneTeamB;
+            for (int i = 0; i < kralNaMat.deathZone.size(); i++) {
+                for (int j = 0; j < deathZoneTeamu.size(); j++) {
+                    if (kralNaMat.deathZone.get(i).getX() == deathZoneTeamu.get(j).getX()
+                            && kralNaMat.deathZone.get(i).getY() == deathZoneTeamu.get(j).getY()) {
+                        zabratePolicka++;
+                        break;
+                    }
+                    if (kralNaMat.x == deathZoneTeamu.get(j).getX() && kralNaMat.y == deathZoneTeamu.get(j).getY()) {
+                        if (kralNaMat.maMat) {
+                            return true;
+                        } else {
+                            mat = true;
+                        }
+                    }
+                }
+            }
+            kralNaMat.maMat = mat;
+            if (zabratePolicka == kralNaMat.deathZone.size() && kralNaMat.deathZone.size() != 0) {
+                return true;
+            }
+        }
+        return false;
     }
 }
