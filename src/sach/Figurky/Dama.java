@@ -1,14 +1,14 @@
 package sach.Figurky;
 
 import sach.Vec2;
+import sach.Enums.TeamEnum;
 
 public class Dama extends Figurka {
-    public Dama(int x, int y, int team) {
+    public Dama(int x, int y, TeamEnum team) {
         super(x, y, team);
-        this.obrazokFigurkyC = this.nacitajObrazok("damaC.png");
-        this.obrazokFigurkyB = this.nacitajObrazok("damaB.png");
-        typ = "Dama";
-        hodnota = 90;
+        super.obrazokFigurkyC = super.nacObrazkov.nacitajObrazok("damaC.png");
+        super.obrazokFigurkyB = super.nacObrazkov.nacitajObrazok("damaB.png");
+        super.hodnota = 90;
     }
 
     @Override
@@ -16,8 +16,8 @@ public class Dama extends Figurka {
         deathZone.clear();
 
         kombinacie = this.generateKomb(new int[] { 1, -1 }, true);
-        for (int j = 0; j < kombinacie.size(); j++) {
-            int pX = kombinacie.get(j)[0], pY = kombinacie.get(j)[1];
+        for (int[] kombinacia : kombinacie) {
+            int pX = kombinacia[0], pY = kombinacia[1];
             for (int i = 0; i < 8; i++) {
                 if ((this.x + pX * i) >= 8 || (this.x + pX * i) < 0 || this.y + pY * i >= 8 || this.y + pY * i < 0) {
                     break;

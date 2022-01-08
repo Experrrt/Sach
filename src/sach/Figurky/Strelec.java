@@ -1,14 +1,14 @@
 package sach.Figurky;
 
 import sach.Vec2;
+import sach.Enums.TeamEnum;
 
 public class Strelec extends Figurka {
-    public Strelec(int x, int y, int team) {
+    public Strelec(int x, int y, TeamEnum team) {
         super(x, y, team);
-        this.obrazokFigurkyC = this.nacitajObrazok("strelecC.png");
-        this.obrazokFigurkyB = this.nacitajObrazok("strelecB.png");
-        typ = "Strelec";
-        hodnota = 30;
+        super.obrazokFigurkyC = super.nacObrazkov.nacitajObrazok("strelecC.png");
+        super.obrazokFigurkyB = super.nacObrazkov.nacitajObrazok("strelecB.png");
+        super.hodnota = 30;
     }
 
     @Override
@@ -23,8 +23,8 @@ public class Strelec extends Figurka {
 
         // for (int j = 0; j < hraciePole.length; j++) {
 
-        for (int j = 0; j < kombinacie.size(); j++) {
-            int pX = kombinacie.get(j)[0], pY = kombinacie.get(j)[1];
+        for (int[] kombinacia : kombinacie) {
+            int pX = kombinacia[0], pY = kombinacia[1];
             for (int i = 0; i < 8; i++) {
                 if ((this.x + pX * i) >= 8 || (this.x + pX * i) < 0 || this.y + pY * i >= 8 || this.y + pY * i < 0) {
                     break;

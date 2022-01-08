@@ -1,14 +1,14 @@
 package sach.Figurky;
 
 import sach.Vec2;
+import sach.Enums.TeamEnum;
 
 public class Kon extends Figurka {
-    public Kon(int x, int y, int team) {
+    public Kon(int x, int y, TeamEnum team) {
         super(x, y, team);
-        this.obrazokFigurkyC = this.nacitajObrazok("konC.png");
-        this.obrazokFigurkyB = this.nacitajObrazok("konB.png");
-        typ = "Kon";
-        hodnota = 30;
+        super.obrazokFigurkyC = super.nacObrazkov.nacitajObrazok("konC.png");
+        super.obrazokFigurkyB = super.nacObrazkov.nacitajObrazok("konB.png");
+        super.hodnota = 30;
     }
 
     @Override
@@ -20,13 +20,13 @@ public class Kon extends Figurka {
         // System.out.println(Arrays.toString(combination));
         // }
         // System.out.println("-----");
-        for (int i = 0; i < kombinacie.size(); i++) {
-            if (this.y + kombinacie.get(i)[0] < 8 && this.y + kombinacie.get(i)[0] >= 0
-                    && this.x + kombinacie.get(i)[1] < 8 && this.x + kombinacie.get(i)[1] >= 0
-                    && (hraciePole[this.y + kombinacie.get(i)[0]][this.x + kombinacie.get(i)[1]] == null
-                            || hraciePole[this.y + kombinacie.get(i)[0]][this.x
-                                    + kombinacie.get(i)[1]].team != this.team)) {
-                deathZone.add(new Vec2(this.y + kombinacie.get(i)[0], this.x + kombinacie.get(i)[1]));
+        for (int[] kombinacia : kombinacie) {
+            if (this.y + kombinacia[0] < 8 && this.y + kombinacia[0] >= 0
+                    && this.x + kombinacia[1] < 8 && this.x + kombinacia[1] >= 0
+                    && (hraciePole[this.y + kombinacia[0]][this.x + kombinacia[1]] == null
+                            || hraciePole[this.y + kombinacia[0]][this.x
+                                    + kombinacia[1]].team != this.team)) {
+                deathZone.add(new Vec2(this.y + kombinacia[0], this.x + kombinacia[1]));
             }
         }
 

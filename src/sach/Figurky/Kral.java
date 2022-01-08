@@ -1,66 +1,49 @@
 package sach.Figurky;
 
 import sach.Vec2;
+import sach.Enums.TeamEnum;
 
 public class Kral extends Figurka {
+    public Boolean maMat;
 
-    public Kral(int x, int y, int team) {
+    public Kral(int x, int y, TeamEnum team) {
         super(x, y, team);
-        this.obrazokFigurkyC = this.nacitajObrazok("kralC.png");
-        this.obrazokFigurkyB = this.nacitajObrazok("kralB.png");
-        typ = "Kral";
-        maMat = false;
-        hodnota = 900;
+        super.obrazokFigurkyC = super.nacObrazkov.nacitajObrazok("kralC.png");
+        super.obrazokFigurkyB = super.nacObrazkov.nacitajObrazok("kralB.png");
+        super.hodnota = 900;
+        this.maMat = false;
     }
 
     @Override
     public void vypocitajDeathZone(Figurka[][] hraciePole) {
         deathZone.clear();
+        Boolean mozesPridat = true;
 
         kombinacie = this.generateKomb(new int[] { 1, 0, -1 }, true);
-        for (int i = 0; i < kombinacie.size(); i++) {
-            if (this.y + kombinacie.get(i)[0] < 8 && this.y + kombinacie.get(i)[0] >= 0
-                    && this.x + kombinacie.get(i)[1] < 8 && this.x + kombinacie.get(i)[1] >= 0
-                    && (hraciePole[this.y + kombinacie.get(i)[0]][this.x + kombinacie.get(i)[1]] == null
-                            || hraciePole[this.y + kombinacie.get(i)[0]][this.x
-                                    + kombinacie.get(i)[1]].team != this.team)) {
-                deathZone.add(new Vec2(this.y + kombinacie.get(i)[0], this.x + kombinacie.get(i)[1]));
+        for (int[] kombinacia : kombinacie) {
+            if (this.y + kombinacia[0] < 8 && this.y + kombinacia[0] >= 0
+                    && this.x + kombinacia[1] < 8 && this.x + kombinacia[1] >= 0
+                    && (hraciePole[this.y + kombinacia[0]][this.x + kombinacia[1]] == null
+                            || hraciePole[this.y + kombinacia[0]][this.x
+                                    + kombinacia[1]].team != this.team)) {
+                for (Figurka[] rad : hraciePole) {
+                    for (Figurka figurka : rad) {
+                        if (figurka != null && figurka.team != this.team) {
+                            for (Vec2 deathZona : figurka.deathZone) {
+                                if (deathZona.getX() == this.x + kombinacia[1]
+                                        && deathZona.getY() == this.y + kombinacia[0]) {
+                                    mozesPridat = false;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (mozesPridat) {
+                    deathZone.add(new Vec2(this.y + kombinacia[0], this.x + kombinacia[1]));
+                }
+                mozesPridat = true;
             }
         }
-        // if (this.x + 1 < 8 && (hraciePole[this.y][this.x + 1] == null
-        // || hraciePole[this.y][this.x + 1].team != this.team)) {
-        // deathZone.add(new Vec2(this.y, this.x + 1));
-        // }
-        // if (this.y - 1 >= 0 && this.x + 1 < 8 && (hraciePole[this.y - 1][this.x + 1]
-        // == null
-        // || hraciePole[this.y - 1][this.x + 1].team != this.team)) {
-        // deathZone.add(new Vec2(this.y - 1, this.x + 1));
-        // }
-        // if (this.y + 1 < 8
-        // && (hraciePole[this.y + 1][this.x] == null || hraciePole[this.y +
-        // 1][this.x].team != this.team)) {
-        // deathZone.add(new Vec2(this.y + 1, this.x));
-        // }
-        // if (this.y + 1 < 8 && this.x - 1 >= 0 && (hraciePole[this.y + 1][this.x - 1]
-        // == null
-        // || hraciePole[this.y + 1][this.x - 1].team != this.team)) {
-        // deathZone.add(new Vec2(this.y + 1, this.x - 1));
-        // }
-        // if (this.x - 1 >= 0
-        // && (hraciePole[this.y][this.x - 1] == null || hraciePole[this.y][this.x -
-        // 1].team != this.team)) {
-        // deathZone.add(new Vec2(this.y, this.x - 1));
-        // }
-        // if (this.y - 1 >= 0
-        // && (hraciePole[this.y - 1][this.x] == null || hraciePole[this.y -
-        // 1][this.x].team != this.team)) {
-        // deathZone.add(new Vec2(this.y - 1, this.x));
-        // }
-        // if (this.y - 1 >= 0 && this.x - 1 >= 0 && (hraciePole[this.y - 1][this.x - 1]
-        // == null
-        // || hraciePole[this.y - 1][this.x - 1].team != this.team)) {
-        // deathZone.add(new Vec2(this.y - 1, this.x - 1));
-        // }
         deathZone.add(new Vec2(this.y, this.x));
     }
 }

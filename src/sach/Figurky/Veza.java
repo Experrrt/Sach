@@ -1,14 +1,14 @@
 package sach.Figurky;
 
 import sach.Vec2;
+import sach.Enums.TeamEnum;
 
 public class Veza extends Figurka {
-    public Veza(int x, int y, int team) {
+    public Veza(int x, int y, TeamEnum team) {
         super(x, y, team);
-        this.obrazokFigurkyC = this.nacitajObrazok("vezaC.png");
-        this.obrazokFigurkyB = this.nacitajObrazok("vezaB.png");
-        typ = "Veza";
-        hodnota = 50;
+        super.obrazokFigurkyC = super.nacObrazkov.nacitajObrazok("vezaC.png");
+        super.obrazokFigurkyB = super.nacObrazkov.nacitajObrazok("vezaB.png");
+        super.hodnota = 50;
     }
 
     @Override

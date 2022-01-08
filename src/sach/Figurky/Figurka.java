@@ -1,25 +1,32 @@
 package sach.Figurky;
 
 import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
+
+import javax.imageio.ImageIO;
+
 import sach.Vec2;
+import sach.Enums.TeamEnum;
+import sach.NacitavacObrazkov;
+
 import java.lang.Math;
 
-public class Figurka {
-    public int x, y, team, hodnota;
-    public String typ;
-    public BufferedImage obrazokFigurkyC, obrazokFigurkyB;
-    public ArrayList<Vec2> deathZone;
-    protected ArrayList<int[]> kombinacie;
-    public Boolean maMat;
-    public ArrayList<Vec2> pesiakPohyb;
+public abstract class Figurka implements Serializable {
+    public int x, y, hodnota;
+    public TeamEnum team;
+    public transient BufferedImage obrazokFigurkyC, obrazokFigurkyB;
+    protected transient ArrayList<int[]> kombinacie;
+    public ArrayList<Vec2> deathZone = new ArrayList<Vec2>();
+    protected transient NacitavacObrazkov nacObrazkov = new NacitavacObrazkov();
 
-    public Figurka(int x, int y, int team) {
+    public Figurka(int x, int y, TeamEnum team) {
         this.y = y;
         this.x = x;
         this.team = team;
-        deathZone = new ArrayList<Vec2>();
     }
 
     public void setX(int x) {
@@ -39,21 +46,7 @@ public class Figurka {
         return false;
     }
 
-    public void vypocitajDeathZone(Figurka[][] hraciePole) {
-    }
-
-    protected final BufferedImage nacitajObrazok(String menoObrazku) {
-        BufferedImage image = null;
-        try {
-            image = ImageIO.read(getClass()
-                    .getResourceAsStream("/sach/images/" + menoObrazku));
-
-        } catch (Exception e) {
-            System.out.println("Image failed to laod");
-
-        }
-        return image;
-    }
+    public abstract void vypocitajDeathZone(Figurka[][] hraciePole);
 
     protected final ArrayList<int[]> generateKomb(int[] komb, boolean opakujuSa) {
         ArrayList<int[]> arrayList = new ArrayList<int[]>();
@@ -67,6 +60,18 @@ public class Figurka {
             }
         }
         return arrayList;
+    }
 
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        out.writeInt(2); // how many images are serialized?
+        ImageIO.write(obrazokFigurkyB, "png", out);
+        ImageIO.write(obrazokFigurkyC, "png", out); // png is lossless
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        obrazokFigurkyB = ImageIO.read(in);
+        obrazokFigurkyC = ImageIO.read(in);
     }
 }

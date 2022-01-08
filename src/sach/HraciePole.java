@@ -1,37 +1,72 @@
 package sach;
 
+import sach.AI.Bot;
+import sach.AI.Vyhodnocovac;
+import sach.Enums.TeamEnum;
+import sach.Enums.VyhraEnum;
 import sach.Figurky.*;
-
+import java.awt.Graphics2D;
 import java.util.ArrayList;
 
-public class HraciePole {
+public abstract class HraciePole {
 
     Figurka[][] hraciePole;
     ArrayList<Figurka> vypadnuteFigurky;
-    boolean koniecHry, vyhernyTeam = false;
+    VyhraEnum vysledokHry = VyhraEnum.NESKONCILA;
     private ArrayList<Figurka> figurkyNaPoly;
+    private Vyhodnocovac vyhodnocovac;
     Figurka zobrataFigurka;
-    boolean teamNaRade = true;
-    ArrayList<Vec2> deathZoneTeamC = new ArrayList<Vec2>();;
-    ArrayList<Vec2> deathZoneTeamB = new ArrayList<Vec2>();;
-    Client client = new Client();
-    AI ai = new AI();
+    TeamEnum teamNaRade = TeamEnum.BIELY;
+    Vec2 odKlik;
+    ArrayList<Hrac> hraci;
+    Server server;
+    InyClient client;
 
-    public HraciePole() {
+    public HraciePole(ArrayList<Hrac> hraci) {
         hraciePole = new Figurka[8][8];
         figurkyNaPoly = new ArrayList<Figurka>();
         vypadnuteFigurky = new ArrayList<Figurka>();
+        vyhodnocovac = new Vyhodnocovac();
         new HracieMody().nacitajFigurky(hraciePole, figurkyNaPoly);
+        this.hraci = hraci;
         // new HracieMody().nacitajFigurky(hraciePole, vypadnuteFigurky);
+        if (hraci.get(0) instanceof Server) {
+            server = (Server) hraci.get(0);
+            try {
+                server.startServer(this);
+            } catch (Exception e) {
+
+            }
+        } else {
+            client = (InyClient) hraci.get(0);
+            try {
+                client.zapniClienta();
+            } catch (Exception e) {
+
+            }
+        }
         prepocitajDeathZone();
     }
 
     public Figurka skontrolujKliknutie(int klikX, int klikY) {
-        if (hraciePole[klikY][klikX] != null && hraciePole[klikY][klikX].team == ((teamNaRade) ? 1 : 0)) {
+        if (hraciePole[klikY][klikX] != null && hraciePole[klikY][klikX].team == teamNaRade) {
             zobrataFigurka = hraciePole[klikY][klikX];
             return zobrataFigurka;
         }
         return null;
+    }
+
+    public void skontrolujOdkliknutie(int klikX, int klikY) {
+        if (true) {
+            if (zobrataFigurka != null) {
+                odKlik = new Vec2();
+                odKlik.set(klikX, klikY);
+                spravTah();
+                // synchronized (this) {
+                // this.notify();
+                // }
+            }
+        }
     }
 
     public void prepocitajDeathZone() {
@@ -40,21 +75,41 @@ public class HraciePole {
         }
     }
 
-    public void aiTah() {
+    public void spravTah() {
         Vec2 newS = new Vec2();
-        if (teamNaRade) {
-            zobrataFigurka = client.spravTah(hraciePole, newS);
-            premiestniFigurku(newS.getX(), newS.getY());
-        } else if (!teamNaRade) {
-            zobrataFigurka = ai.spravTah(hraciePole, newS, figurkyNaPoly);
-            premiestniFigurku(newS.getY(), newS.getX());
-        }
-    }
+        // if (teamNaRade) {
+        // try {
+        // synchronized (this) {
+        // while (odKlik == null && hraci.get((teamNaRade) ? 0 :
+        // 1).getClass().isInstance(new Client())) {
+        // this.wait();
+        // }
 
-    public void skontrolujOdkliknutie(int newX, int newY) {
-        if (teamNaRade) {
-            premiestniFigurku(newX, newY);
+        // if (hraci.get(teamNaRade.teamHodnota) instanceof Bot) {
+        // zobrataFigurka = hraci.get(teamNaRade.teamHodnota).spravTah(hraciePole, newS,
+        // figurkyNaPoly);
+        // premiestniFigurku(newS.getY(), newS.getX());
+        // } else if (odKlik != null && hraci.get(teamNaRade.teamHodnota) instanceof
+        // Client) {
+        // premiestniFigurku(odKlik.getY(), odKlik.getX());
+        // }
+
+        if (odKlik != null) {
+            premiestniFigurku(odKlik.getY(), odKlik.getX());
+            hraci.get(0).spravTah(hraciePole, newS, figurkyNaPoly);
         }
+        // if (odKlik != null) {
+        // premiestniFigurku(odKlik.getY(), odKlik.getX());
+        // }
+        // }
+        // } catch (InterruptedException e) {
+        // }
+        odKlik = null;
+        zobrataFigurka = null;
+        // } else if (!teamNaRade) {
+        // zobrataFigurka = ciernyHrac.spravTah(hraciePole, newS, figurkyNaPoly);
+        // premiestniFigurku(newS.getY(), newS.getX());
+        // }
     }
 
     // && zobrataFigurka.team == ((teamNaRade) ? 1 : 0)
@@ -62,11 +117,11 @@ public class HraciePole {
         if (newX < 8 && newY < 8 && newX >= 0 && newY >= 0
                 && zobrataFigurka != null
                 && zobrataFigurka.skontrolujPohyb(newX, newY, hraciePole)
-                && zobrataFigurka.team == ((teamNaRade) ? 1 : 0)) {//
+                && zobrataFigurka.team == teamNaRade) {//
             if (hraciePole[newY][newX] != null) {
                 if (hraciePole[newY][newX].team == zobrataFigurka.team) {
                     zobrataFigurka = null;
-                    aiTah();
+                    spravTah();
                     return;
                 } else {
                     vypadnuteFigurky.add(hraciePole[newY][newX]);
@@ -83,85 +138,38 @@ public class HraciePole {
             zobrataFigurka.setX(newX);
             zobrataFigurka.setY(newY);
             prepocitajDeathZone();
-            koniecHry = skontrolujKoniecHry();
-            teamNaRade = !teamNaRade;
+            posliHraciePoleNaSocket();
+            vysledokHry = vyhodnocovac.skontrolujKoniecHry(figurkyNaPoly);
+            teamNaRade = (teamNaRade == TeamEnum.BIELY) ? TeamEnum.CIERNY : TeamEnum.BIELY;
         }
         zobrataFigurka = null;
-        aiTah();
+        odKlik = null;
+        spravTah();
     }
 
-    public boolean skontrolujKoniecHry() {
-        ArrayList<Figurka> pKon, pKral, pPesiak, pStrelec;
-        pKon = new ArrayList<>();
-        pKral = new ArrayList<>();
-        pPesiak = new ArrayList<>();
-        pStrelec = new ArrayList<>();
-        deathZoneTeamC.clear();
-        deathZoneTeamB.clear();
-
-        for (int i = 0; i < figurkyNaPoly.size(); i++) {
-            switch (figurkyNaPoly.get(i).typ) {
-                case "Kon":
-                    pKon.add(figurkyNaPoly.get(i));
-                    break;
-                case "Kral":
-                    pKral.add(figurkyNaPoly.get(i));
-                    break;
-                case "Pesiak":
-                    pPesiak.add(figurkyNaPoly.get(i));
-                    break;
-                case "Strelec":
-                    pStrelec.add(figurkyNaPoly.get(i));
-                    break;
-            }
-            if (figurkyNaPoly.get(i).team == 0) {
-                deathZoneTeamC.addAll(figurkyNaPoly.get(i).deathZone);
-            } else {
-                deathZoneTeamB.addAll(figurkyNaPoly.get(i).deathZone);
-            }
+    private void posliHraciePoleNaSocket() {
+        if (hraci.size() == 1 && hraci.get(0) instanceof Server) {
+            server.serverPosliPole(hraciePole);
+            cakajNaUpdate();
+        } else {
+            client.posliPole(hraciePole);
         }
-
-        // remiza
-        if (figurkyNaPoly.size() == 2 && pKral.size() == 2) {
-            return true;
-        } else if (figurkyNaPoly.size() == 3 && (pKon.size() == 1 || pStrelec.size() == 1) && pKral.size() == 2) {
-            return true;
-        } else if ((figurkyNaPoly.size() == 4 && (pKon.size() <= 2 || pStrelec.size() <= 2) && pKral.size() == 2)
-                && (pKon.size() == 2 && pKon.get(0).team != pKon.get(1).team
-                        || pKon.size() == 1 && pStrelec.size() == 1 && pKon.get(0).team != pStrelec.get(0).team
-                        || pStrelec.size() == 2 && pStrelec.get(0).team != pStrelec.get(1).team)) {
-            return true;
-        } else if (figurkyNaPoly.size() == 4 && pKon.size() == 2 && pKon.get(0).team == pKon.get(1).team
-                && pKral.size() == 2) {
-            return true;
-        }
-        // prehra
-        for (int y = 0; y < pKral.size(); y++) {
-            int zabratePolicka = 0;
-            Figurka kralNaMat = pKral.get(y);
-            Boolean mat = false;
-            ArrayList<Vec2> deathZoneTeamu = (kralNaMat.team == 1) ? deathZoneTeamC : deathZoneTeamB;
-            for (int i = 0; i < kralNaMat.deathZone.size(); i++) {
-                for (int j = 0; j < deathZoneTeamu.size(); j++) {
-                    if (kralNaMat.deathZone.get(i).getX() == deathZoneTeamu.get(j).getX()
-                            && kralNaMat.deathZone.get(i).getY() == deathZoneTeamu.get(j).getY()) {
-                        zabratePolicka++;
-                        break;
-                    }
-                    if (kralNaMat.x == deathZoneTeamu.get(j).getX() && kralNaMat.y == deathZoneTeamu.get(j).getY()) {
-                        if (kralNaMat.maMat) {
-                            return true;
-                        } else {
-                            mat = true;
-                        }
-                    }
-                }
-            }
-            kralNaMat.maMat = mat;
-            if (zabratePolicka == kralNaMat.deathZone.size() && kralNaMat.deathZone.size() != 0) {
-                return true;
-            }
-        }
-        return false;
     }
+
+    private void cakajNaUpdate() {
+        try {
+            synchronized (hraciePole) {
+                hraciePole.wait();
+                System.out.println("No co");
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
+    public abstract void spustiStopky();
+
+    public abstract void zastavStopky();
+
+    public abstract void paint(Graphics2D g);
 }
