@@ -6,8 +6,6 @@ import sach.Enums.TeamEnum;
 public class Dama extends Figurka {
     public Dama(int x, int y, TeamEnum team) {
         super(x, y, team);
-        super.obrazokFigurkyC = super.nacObrazkov.nacitajObrazok("damaC.png");
-        super.obrazokFigurkyB = super.nacObrazkov.nacitajObrazok("damaB.png");
         super.hodnota = 90;
     }
 

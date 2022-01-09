@@ -15,8 +15,9 @@ public class InyClient implements Hrac, Runnable {
     ObjectOutputStream objectOutputStream;
     boolean cakaj = true;
     Figurka[][] pole;
+    HraciePole daco;
 
-    public void zapniClienta() throws IOException, ClassNotFoundException {
+    public void zapniClienta(HraciePole celepole) throws IOException, ClassNotFoundException {
         s = new Socket("localhost", 4999);
 
         outputStream = s.getOutputStream();
@@ -25,12 +26,14 @@ public class InyClient implements Hrac, Runnable {
         objectInputStream = new ObjectInputStream(in);
         new Thread(this).start();
         // int[] cisla = { 1, 2, 3, 4, 5 };
+        daco = celepole;
 
         // objectOutputStream.writeObject(cisla);
         // cakajnanieco();
     }
 
-    public void posliPole(Figurka[][] hraciePole) {
+    public void posliPole(Figurka[][] hraciePole, HraciePole celepole) {
+        daco = celepole;
         if (cakaj)
             return;
         try {
@@ -48,12 +51,18 @@ public class InyClient implements Hrac, Runnable {
         return null;
     }
 
+    public Figurka[][] getNovePole() {
+        return pole;
+    }
+
     @Override
     public void run() {
         if (cakaj) {
             try {
                 pole = (Figurka[][]) objectInputStream.readObject();
-                notifyAll();
+                synchronized (daco) {
+                    daco.notify();
+                }
             } catch (Exception e) {
             }
             cakaj = false;

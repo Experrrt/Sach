@@ -8,8 +8,6 @@ public class Kral extends Figurka {
 
     public Kral(int x, int y, TeamEnum team) {
         super(x, y, team);
-        super.obrazokFigurkyC = super.nacObrazkov.nacitajObrazok("kralC.png");
-        super.obrazokFigurkyB = super.nacObrazkov.nacitajObrazok("kralB.png");
         super.hodnota = 900;
         this.maMat = false;
     }

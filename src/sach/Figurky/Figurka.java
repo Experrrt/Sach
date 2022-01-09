@@ -1,29 +1,19 @@
 package sach.Figurky;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-
-import javax.imageio.ImageIO;
-
 import sach.Vec2;
 import sach.Enums.TeamEnum;
-import sach.NacitavacObrazkov;
 
 import java.lang.Math;
 
 public abstract class Figurka implements Serializable {
     public int x, y, hodnota;
     public TeamEnum team;
-    public transient BufferedImage obrazokFigurkyC, obrazokFigurkyB;
     protected transient ArrayList<int[]> kombinacie;
     public ArrayList<Vec2> deathZone = new ArrayList<Vec2>();
-    protected transient NacitavacObrazkov nacObrazkov = new NacitavacObrazkov();
 
-    public Figurka(int x, int y, TeamEnum team) {
+    protected Figurka(int x, int y, TeamEnum team) {
         this.y = y;
         this.x = x;
         this.team = team;
@@ -60,18 +50,5 @@ public abstract class Figurka implements Serializable {
             }
         }
         return arrayList;
-    }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject();
-        out.writeInt(2); // how many images are serialized?
-        ImageIO.write(obrazokFigurkyB, "png", out);
-        ImageIO.write(obrazokFigurkyC, "png", out); // png is lossless
-    }
-
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        obrazokFigurkyB = ImageIO.read(in);
-        obrazokFigurkyC = ImageIO.read(in);
     }
 }

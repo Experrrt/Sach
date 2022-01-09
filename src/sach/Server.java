@@ -48,8 +48,9 @@ public class Server implements Hrac, Runnable {
         // }
     }
 
-    public void serverPosliPole(Figurka[][] pole) {
+    public void serverPosliPole(Figurka[][] pole, HraciePole celepole) {
         this.pole = pole;
+        this.daco = celepole;
         if (cakaj)
             return;
         try {
@@ -68,15 +69,18 @@ public class Server implements Hrac, Runnable {
         return null;
     }
 
+    public Figurka[][] getNovePole() {
+        return pole;
+    }
+
     @Override
     public void run() {
         if (cakaj) {
             try {
                 pole = (Figurka[][]) objInStream.readObject();
                 // System.out.println(ano);
-                synchronized (pole) {
-                    pole.notify();
-                    pole = new Figurka[8][8];
+                synchronized (daco) {
+                    daco.notify();
                 }
             } catch (Exception e) {
             }

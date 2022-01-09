@@ -40,7 +40,7 @@ public abstract class HraciePole {
         } else {
             client = (InyClient) hraci.get(0);
             try {
-                client.zapniClienta();
+                client.zapniClienta(this);
             } catch (Exception e) {
 
             }
@@ -149,18 +149,22 @@ public abstract class HraciePole {
 
     private void posliHraciePoleNaSocket() {
         if (hraci.size() == 1 && hraci.get(0) instanceof Server) {
-            server.serverPosliPole(hraciePole);
-            cakajNaUpdate();
+            server.serverPosliPole(hraciePole, this);
         } else {
-            client.posliPole(hraciePole);
+            client.posliPole(hraciePole, this);
         }
+        cakajNaUpdate();
     }
 
     private void cakajNaUpdate() {
         try {
-            synchronized (hraciePole) {
-                hraciePole.wait();
-                System.out.println("No co");
+            synchronized (this) {
+                this.wait();
+                if (hraci.size() == 1 && hraci.get(0) instanceof Server) {
+                    hraciePole = server.getNovePole();
+                } else {
+                    hraciePole = client.getNovePole();
+                }
             }
         } catch (Exception e) {
 

@@ -9,8 +9,6 @@ public class Pesiak extends Figurka {
 
     public Pesiak(int x, int y, TeamEnum team) {
         super(x, y, team);
-        super.obrazokFigurkyC = super.nacObrazkov.nacitajObrazok("pesiakC.png");
-        super.obrazokFigurkyB = super.nacObrazkov.nacitajObrazok("pesiakB.png");
         super.hodnota = 10;
         this.pesiakPohyby = new ArrayList<Vec2>();
     }

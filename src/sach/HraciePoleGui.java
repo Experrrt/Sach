@@ -2,16 +2,20 @@ package sach;
 
 import java.awt.Color;
 import sach.Figurky.Figurka;
-import sach.Figurky.Pesiak;
+import sach.Figurky.*;
 import java.awt.*;
 import java.util.ArrayList;
-
+import java.util.HashMap;
+import java.util.Map;
+import java.awt.image.BufferedImage;
 import sach.Enums.TeamEnum;
 import sach.Enums.VyhraEnum;
 
 public class HraciePoleGui extends HraciePole {
     private int sirka, vyska, offSetX, offSetY;
     private Stopky stopky;
+    HashMap<Class<?>, BufferedImage> mapaObrazkovB = new HashMap<>();
+    HashMap<Class<?>, BufferedImage> mapaObrazkovC = new HashMap<>();
 
     public HraciePoleGui(ArrayList<Hrac> hraci, int sirka, int vyska, int offSetX, int offSetY) {
         super(hraci);
@@ -20,6 +24,23 @@ public class HraciePoleGui extends HraciePole {
         this.offSetX = offSetX;
         this.offSetY = offSetY;
         this.stopky = new Stopky();
+        nacitajObrazky();
+    }
+
+    private void nacitajObrazky() {
+        NacitavacObrazkov nacitavac = new NacitavacObrazkov();
+        mapaObrazkovB.put(Pesiak.class, nacitavac.nacitajObrazok("pesiakB.png"));
+        mapaObrazkovC.put(Pesiak.class, nacitavac.nacitajObrazok("pesiakC.png"));
+        mapaObrazkovB.put(Strelec.class, nacitavac.nacitajObrazok("strelecB.png"));
+        mapaObrazkovC.put(Strelec.class, nacitavac.nacitajObrazok("strelecC.png"));
+        mapaObrazkovB.put(Kon.class, nacitavac.nacitajObrazok("konB.png"));
+        mapaObrazkovC.put(Kon.class, nacitavac.nacitajObrazok("konC.png"));
+        mapaObrazkovB.put(Dama.class, nacitavac.nacitajObrazok("damaB.png"));
+        mapaObrazkovC.put(Dama.class, nacitavac.nacitajObrazok("damaC.png"));
+        mapaObrazkovB.put(Veza.class, nacitavac.nacitajObrazok("vezaB.png"));
+        mapaObrazkovC.put(Veza.class, nacitavac.nacitajObrazok("vezaC.png"));
+        mapaObrazkovB.put(Kral.class, nacitavac.nacitajObrazok("kralB.png"));
+        mapaObrazkovC.put(Kral.class, nacitavac.nacitajObrazok("kralC.png"));
     }
 
     @Override
@@ -71,11 +92,18 @@ public class HraciePoleGui extends HraciePole {
 
                 if (figurkaNaRender != null) {
                     g.drawImage(
-                            ((figurkaNaRender.team == TeamEnum.BIELY) ? figurkaNaRender.obrazokFigurkyB
-                                    : figurkaNaRender.obrazokFigurkyC),
+                            (figurkaNaRender.team == TeamEnum.BIELY) ? mapaObrazkovB.get(figurkaNaRender.getClass())
+                                    : mapaObrazkovC.get(figurkaNaRender.getClass()),
                             offSetX + figurkaNaRender.x * 100 + 20,
                             offSetY + figurkaNaRender.y * 100 + 20,
                             null);
+
+                    // g.drawImage(
+                    // ((figurkaNaRender.team == TeamEnum.BIELY) ? figurkaNaRender.obrazokFigurkyB
+                    // : figurkaNaRender.obrazokFigurkyC),
+                    // offSetX + figurkaNaRender.x * 100 + 20,
+                    // offSetY + figurkaNaRender.y * 100 + 20,
+                    // null);
                 }
             }
         }
@@ -102,8 +130,8 @@ public class HraciePoleGui extends HraciePole {
             figurkaNaRender = vypadnuteFigurky.get(i);
             if (figurkaNaRender != null) {
                 g.drawImage(
-                        ((figurkaNaRender.team == TeamEnum.BIELY) ? figurkaNaRender.obrazokFigurkyB
-                                : figurkaNaRender.obrazokFigurkyC),
+                        (figurkaNaRender.team == TeamEnum.BIELY) ? mapaObrazkovB.get(figurkaNaRender.getClass())
+                                : mapaObrazkovC.get(figurkaNaRender.getClass()),
                         ((i < 16) ? offSetX + i * 45 + 20 : offSetX + (i - 16) * 45 + 25),
                         ((i < 16) ? vyska + offSetY : vyska + offSetY + 25), null);
             }
