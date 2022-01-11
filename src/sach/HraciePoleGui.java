@@ -6,7 +6,6 @@ import sach.Figurky.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.awt.image.BufferedImage;
 import sach.Enums.TeamEnum;
 import sach.Enums.VyhraEnum;
@@ -14,11 +13,11 @@ import sach.Enums.VyhraEnum;
 public class HraciePoleGui extends HraciePole {
     private int sirka, vyska, offSetX, offSetY;
     private Stopky stopky;
-    HashMap<Class<?>, BufferedImage> mapaObrazkovB = new HashMap<>();
-    HashMap<Class<?>, BufferedImage> mapaObrazkovC = new HashMap<>();
+    private HashMap<Class<?>, BufferedImage> mapaObrazkovB = new HashMap<>();
+    private HashMap<Class<?>, BufferedImage> mapaObrazkovC = new HashMap<>();
 
-    public HraciePoleGui(ArrayList<Hrac> hraci, int sirka, int vyska, int offSetX, int offSetY) {
-        super(hraci);
+    public HraciePoleGui(ArrayList<Hrac> hraci, int sirka, int vyska, int offSetX, int offSetY, boolean onlineHra) {
+        super(hraci, onlineHra);
         this.sirka = sirka;
         this.vyska = vyska;
         this.offSetX = offSetX;
@@ -65,8 +64,20 @@ public class HraciePoleGui extends HraciePole {
         g.setFont(new Font("SansSerif", Font.BOLD, 30));
         g.drawString(stopky.getFormatovanyCas(), (offSetX + sirka) / 2 - 45, 50);
         g.setFont(new Font("SansSerif", Font.BOLD, 17));
-        g.drawString("Na rade je: " + ((teamNaRade == TeamEnum.BIELY) ? "Biely" : "Čierny"),
-                25, 40);
+
+        if (teamNaRade == TeamEnum.BIELY && somNaRadeOnline) {
+            g.drawString("Na rade je: Biely",
+                    25, 40);
+        } else if (teamNaRade == TeamEnum.BIELY) {
+            g.drawString("Na rade je: Čierny",
+                    25, 40);
+        } else if (teamNaRade == TeamEnum.CIERNY && somNaRadeOnline) {
+            g.drawString("Na rade je: Čierny",
+                    25, 40);
+        } else if (teamNaRade == TeamEnum.CIERNY) {
+            g.drawString("Na rade je: Biely",
+                    25, 40);
+        }
         g.setFont(new Font("SansSerif", Font.BOLD, 30));
         if (vysledokHry == VyhraEnum.VYHRA_B) {
             g.drawString("Vyhral Biely", sirka / 2 - 90, 100);
@@ -137,5 +148,4 @@ public class HraciePoleGui extends HraciePole {
             }
         }
     }
-
 }

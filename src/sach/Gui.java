@@ -8,7 +8,6 @@ import javax.swing.JPanel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.*;
 import sach.Enums.VyhraEnum;
 
 public class Gui extends JPanel implements Runnable {
@@ -18,16 +17,9 @@ public class Gui extends JPanel implements Runnable {
     private Thread GuiThread = new Thread(this);
     private int offSetY = 150, offSetX = 0, vyska = 800, sirka = 800;
 
-    public Gui(String cau) {
-        // mainMenu = new MainMenuGui(sirka, vyska,
-        // offSetX, offSetY);
-        if (cau == "S") {
-            hraciePole = new HraciePoleGui(new ArrayList<>(Arrays.asList(new Server())), sirka, vyska, offSetX,
-                    offSetY);
-        } else {
-            hraciePole = new HraciePoleGui(new ArrayList<>(Arrays.asList(new InyClient())), sirka, vyska, offSetX,
-                    offSetY);
-        }
+    public Gui() {
+        mainMenu = new MainMenuGui(sirka, vyska,
+                offSetX, offSetY);
 
         this.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         setPreferredSize(new Dimension(2 * offSetX + sirka, 2 * offSetY + vyska - 50));
@@ -70,7 +62,7 @@ public class Gui extends JPanel implements Runnable {
         jFrame.setResizable(false);
         jFrame.add(this, BorderLayout.CENTER);
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        jFrame.setTitle(cau);
+        jFrame.setTitle("Števo Šarišský");
     }
 
     public void spustiGui() {
@@ -81,6 +73,7 @@ public class Gui extends JPanel implements Runnable {
 
     private void spustiHru() {
         if (hraciePole != null) {
+            hraciePole.skusSpustitOnline();
             hraciePole.spravTah();
             hraciePole.spustiStopky();
         }
@@ -89,6 +82,9 @@ public class Gui extends JPanel implements Runnable {
     @Override
     public void run() {
         do {
+            if (hraciePole != null) {
+                hraciePole.skusUpdate();
+            }
             repaint();
             try {
                 Thread.sleep(100L);

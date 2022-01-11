@@ -1,5 +1,6 @@
 package sach;
 
+import sach.Enums.VyhraEnum;
 import sach.Figurky.*;
 import java.util.ArrayList;
 
@@ -22,7 +23,8 @@ public class Client implements Hrac {
     // }
 
     @Override
-    public Figurka spravTah(Figurka[][] hraciePole, Vec2 newS, ArrayList<Figurka> figurkyNaPoly) {
+    public Figurka spravTah(Figurka[][] hraciePole, Vec2 newS, ArrayList<Figurka> figurkyNaPoly,
+            ArrayList<Figurka> vypadnuteFigurky, VyhraEnum vysledokHry) {
         // try {
         // synchronized (this) {
         // while (odKlik == null || klik == null) {

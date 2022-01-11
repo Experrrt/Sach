@@ -3,6 +3,7 @@ package sach.AI;
 import sach.Hrac;
 import sach.Vec2;
 import sach.Enums.TeamEnum;
+import sach.Enums.VyhraEnum;
 import sach.Figurky.*;
 import java.util.ArrayList;
 import java.util.Random;
@@ -11,7 +12,8 @@ public class Bot implements Hrac {
     Random rnd = new Random();
 
     @Override
-    public Figurka spravTah(Figurka[][] hraciePole, Vec2 newS, ArrayList<Figurka> figurkyNaPoly) {
+    public Figurka spravTah(Figurka[][] hraciePole, Vec2 newS, ArrayList<Figurka> figurkyNaPoly,
+            ArrayList<Figurka> vypadnuteFigurky, VyhraEnum vysledokHry) {
         Figurka zobrataFigurka = hraciePole[1][6];
         newS.set(6, 2);
         // newY = 2;

@@ -22,13 +22,25 @@ public class MainMenuGui {
 
         buttony.add(new Button((sirka + offSetX) / 2 - 150, (vyska + offSetY) / 2 - 100, 300, 100, "Hrac vs Hrac",
                 new HraciePoleGui(
-                        new ArrayList<>(Arrays.asList(new Client(), new Client())), sirka, vyska, offSetX, offSetY)));
+                        new ArrayList<>(Arrays.asList(new Client(), new Client())), sirka, vyska, offSetX,
+                        offSetY, false)));
         buttony.add(new Button((sirka + offSetX) / 2 - 150, (vyska + offSetY) / 2 + 100, 300, 100, "Hrac vs Bot",
                 new HraciePoleGui(
-                        new ArrayList<>(Arrays.asList(new Bot(), new Client())), sirka, vyska, offSetX, offSetY)));
-        buttony.add(new Button((sirka + offSetX) / 2 - 150, (vyska + offSetY) / 2 + 300, 300, 100, "Multiplayer",
-                new HraciePoleGui(
-                        new ArrayList<>(Arrays.asList(new Server())), sirka, vyska, offSetX, offSetY)));
+                        new ArrayList<>(Arrays.asList(new Bot(), new Client())), sirka, vyska, offSetX, offSetY,
+                        false)));
+        try {
+            buttony.add(
+                    new Button((sirka + offSetX) / 2 - 150, (vyska + offSetY) / 2 + 300, 300, 100, "Multiplayer Server",
+                            new HraciePoleGui(
+                                    new ArrayList<>(Arrays.asList(new Server())), sirka, vyska, offSetX, offSetY,
+                                    true)));
+            buttony.add(
+                    new Button((sirka + offSetX) / 2 - 150, (vyska + offSetY) / 2 + 500, 300, 100, "Multiplayer Join",
+                            new HraciePoleGui(
+                                    new ArrayList<>(Arrays.asList(new InyClient())), sirka, vyska, offSetX, offSetY,
+                                    true)));
+        } catch (Exception e) {
+        }
     }
 
     public HraciePoleGui skontrolujOdkliknutie(Vec2 kliknutie) {

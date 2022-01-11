@@ -17,39 +17,38 @@ public abstract class HraciePole {
     private Vyhodnocovac vyhodnocovac;
     Figurka zobrataFigurka;
     TeamEnum teamNaRade = TeamEnum.BIELY;
-    Vec2 odKlik;
-    ArrayList<Hrac> hraci;
-    Server server;
-    InyClient client;
+    Boolean hraJeOnline, somNaRadeOnline = true;
+    private Vec2 odKlik;
+    private ArrayList<Hrac> hraci;
 
-    public HraciePole(ArrayList<Hrac> hraci) {
+    public HraciePole(ArrayList<Hrac> hraci, Boolean onlineHra) {
         hraciePole = new Figurka[8][8];
         figurkyNaPoly = new ArrayList<Figurka>();
         vypadnuteFigurky = new ArrayList<Figurka>();
         vyhodnocovac = new Vyhodnocovac();
         new HracieMody().nacitajFigurky(hraciePole, figurkyNaPoly);
         this.hraci = hraci;
-        // new HracieMody().nacitajFigurky(hraciePole, vypadnuteFigurky);
-        if (hraci.get(0) instanceof Server) {
-            server = (Server) hraci.get(0);
-            try {
-                server.startServer(this);
-            } catch (Exception e) {
-
-            }
-        } else {
-            client = (InyClient) hraci.get(0);
-            try {
-                client.zapniClienta(this);
-            } catch (Exception e) {
-
-            }
-        }
+        this.hraJeOnline = onlineHra;
         prepocitajDeathZone();
     }
 
+    public void skusSpustitOnline() {
+        if (!hraJeOnline)
+            return;
+        try {
+            if (hraci.get(0) instanceof Server) {
+                ((Server) hraci.get(0)).start();
+            } else if (hraci.get(0) instanceof InyClient) {
+                ((InyClient) hraci.get(0)).start();
+                teamNaRade = TeamEnum.CIERNY;
+                somNaRadeOnline = false;
+            }
+        } catch (Exception e) {
+        }
+    }
+
     public Figurka skontrolujKliknutie(int klikX, int klikY) {
-        if (hraciePole[klikY][klikX] != null && hraciePole[klikY][klikX].team == teamNaRade) {
+        if (hraciePole[klikY][klikX] != null && hraciePole[klikY][klikX].team == teamNaRade && somNaRadeOnline) {
             zobrataFigurka = hraciePole[klikY][klikX];
             return zobrataFigurka;
         }
@@ -62,9 +61,6 @@ public abstract class HraciePole {
                 odKlik = new Vec2();
                 odKlik.set(klikX, klikY);
                 spravTah();
-                // synchronized (this) {
-                // this.notify();
-                // }
             }
         }
     }
@@ -77,52 +73,45 @@ public abstract class HraciePole {
 
     public void spravTah() {
         Vec2 newS = new Vec2();
-        // if (teamNaRade) {
-        // try {
-        // synchronized (this) {
-        // while (odKlik == null && hraci.get((teamNaRade) ? 0 :
-        // 1).getClass().isInstance(new Client())) {
-        // this.wait();
-        // }
 
-        // if (hraci.get(teamNaRade.teamHodnota) instanceof Bot) {
-        // zobrataFigurka = hraci.get(teamNaRade.teamHodnota).spravTah(hraciePole, newS,
-        // figurkyNaPoly);
-        // premiestniFigurku(newS.getY(), newS.getX());
-        // } else if (odKlik != null && hraci.get(teamNaRade.teamHodnota) instanceof
-        // Client) {
-        // premiestniFigurku(odKlik.getY(), odKlik.getX());
-        // }
-
-        if (odKlik != null) {
-            premiestniFigurku(odKlik.getY(), odKlik.getX());
-            hraci.get(0).spravTah(hraciePole, newS, figurkyNaPoly);
+        if (!hraJeOnline && hraci.get(teamNaRade.teamHodnota) instanceof Bot) {
+            zobrataFigurka = hraci.get(teamNaRade.teamHodnota).spravTah(hraciePole, newS,
+                    figurkyNaPoly, vypadnuteFigurky, vysledokHry);
+            skusPremiestnitFigurku(newS.getY(), newS.getX());
+        } else if (!hraJeOnline && odKlik != null && hraci.get(teamNaRade.teamHodnota) instanceof Client) {
+            skusPremiestnitFigurku(odKlik.getY(), odKlik.getX());
         }
-        // if (odKlik != null) {
-        // premiestniFigurku(odKlik.getY(), odKlik.getX());
-        // }
-        // }
-        // } catch (InterruptedException e) {
-        // }
+
+        if (hraJeOnline && odKlik != null && somNaRadeOnline
+                && skusPremiestnitFigurku(odKlik.getY(), odKlik.getX())) {
+            hraci.get(0).spravTah(hraciePole, newS, figurkyNaPoly, vypadnuteFigurky, vysledokHry);
+            somNaRadeOnline = false;
+        }
         odKlik = null;
         zobrataFigurka = null;
-        // } else if (!teamNaRade) {
-        // zobrataFigurka = ciernyHrac.spravTah(hraciePole, newS, figurkyNaPoly);
-        // premiestniFigurku(newS.getY(), newS.getX());
-        // }
     }
 
-    // && zobrataFigurka.team == ((teamNaRade) ? 1 : 0)
-    public void premiestniFigurku(int newX, int newY) {
+    private void prepocitajFigurky() {
+        figurkyNaPoly.clear();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (hraciePole[i][j] != null) {
+                    figurkyNaPoly.add(hraciePole[i][j]);
+                }
+            }
+        }
+    }
+
+    public boolean skusPremiestnitFigurku(int newX, int newY) {
         if (newX < 8 && newY < 8 && newX >= 0 && newY >= 0
                 && zobrataFigurka != null
                 && zobrataFigurka.skontrolujPohyb(newX, newY, hraciePole)
-                && zobrataFigurka.team == teamNaRade) {//
+                && zobrataFigurka.team == teamNaRade
+                && somNaRadeOnline) {//
             if (hraciePole[newY][newX] != null) {
                 if (hraciePole[newY][newX].team == zobrataFigurka.team) {
                     zobrataFigurka = null;
-                    spravTah();
-                    return;
+                    return false;
                 } else {
                     vypadnuteFigurky.add(hraciePole[newY][newX]);
                     for (int i = 0; i < figurkyNaPoly.size(); i++) {
@@ -138,36 +127,29 @@ public abstract class HraciePole {
             zobrataFigurka.setX(newX);
             zobrataFigurka.setY(newY);
             prepocitajDeathZone();
-            posliHraciePoleNaSocket();
             vysledokHry = vyhodnocovac.skontrolujKoniecHry(figurkyNaPoly);
-            teamNaRade = (teamNaRade == TeamEnum.BIELY) ? TeamEnum.CIERNY : TeamEnum.BIELY;
+            if (!hraJeOnline) {
+                teamNaRade = (teamNaRade == TeamEnum.BIELY) ? TeamEnum.CIERNY : TeamEnum.BIELY;
+            }
+            return true;
         }
         zobrataFigurka = null;
         odKlik = null;
-        spravTah();
+        return false;
     }
 
-    private void posliHraciePoleNaSocket() {
-        if (hraci.size() == 1 && hraci.get(0) instanceof Server) {
-            server.serverPosliPole(hraciePole, this);
-        } else {
-            client.posliPole(hraciePole, this);
-        }
-        cakajNaUpdate();
-    }
-
-    private void cakajNaUpdate() {
-        try {
-            synchronized (this) {
-                this.wait();
-                if (hraci.size() == 1 && hraci.get(0) instanceof Server) {
-                    hraciePole = server.getNovePole();
-                } else {
-                    hraciePole = client.getNovePole();
-                }
+    public void skusUpdate() {
+        if (hraJeOnline) {
+            ServerSprava docPole = (hraci.get(0) instanceof Server) ? ((Server) hraci.get(0)).novePole()
+                    : ((InyClient) hraci.get(0)).novePole();
+            if (docPole != null) {
+                hraciePole = docPole.getSpravaPole();
+                vypadnuteFigurky = docPole.getSpravaFigurky();
+                vysledokHry = docPole.getVysledokHry();
+                prepocitajFigurky();
+                prepocitajDeathZone();
+                somNaRadeOnline = true;
             }
-        } catch (Exception e) {
-
         }
     }
 

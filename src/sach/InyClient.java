@@ -4,7 +4,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import sach.Figurky.Figurka;
-
+import sach.Enums.VyhraEnum;
 import java.io.*;
 
 public class InyClient implements Hrac, Runnable {
@@ -13,11 +13,10 @@ public class InyClient implements Hrac, Runnable {
     InputStream in;
     ObjectInputStream objectInputStream;
     ObjectOutputStream objectOutputStream;
-    boolean cakaj = true;
-    Figurka[][] pole;
-    HraciePole daco;
+    boolean update = false;
+    ServerSprava sSparava;
 
-    public void zapniClienta(HraciePole celepole) throws IOException, ClassNotFoundException {
+    public void start() throws IOException, ClassNotFoundException {
         s = new Socket("localhost", 4999);
 
         outputStream = s.getOutputStream();
@@ -25,47 +24,50 @@ public class InyClient implements Hrac, Runnable {
         in = s.getInputStream();
         objectInputStream = new ObjectInputStream(in);
         new Thread(this).start();
-        // int[] cisla = { 1, 2, 3, 4, 5 };
-        daco = celepole;
-
-        // objectOutputStream.writeObject(cisla);
-        // cakajnanieco();
     }
 
-    public void posliPole(Figurka[][] hraciePole, HraciePole celepole) {
-        daco = celepole;
-        if (cakaj)
-            return;
+    public void posliPole(Figurka[][] hraciePole, ArrayList<Figurka> vypadnuteFigurky, VyhraEnum vysledokHry) {
         try {
-            objectOutputStream.writeObject(hraciePole);
+            objectOutputStream.writeObject(new ServerSprava(hraciePole, vypadnuteFigurky, vysledokHry));
         } catch (Exception e) {
             System.out.println("Nepodarilo sa poslat ani moc");
         }
-        cakaj = true;
-        new Thread(this).start();
+        synchronized (this) {
+            this.notify();
+        }
     }
 
     @Override
-    public Figurka spravTah(Figurka[][] hraciePole, Vec2 newS, ArrayList<Figurka> figurkyNaPoly) {
-        // TODO Auto-generated method stub
+    public Figurka spravTah(Figurka[][] hraciePole, Vec2 newS, ArrayList<Figurka> figurkyNaPoly,
+            ArrayList<Figurka> vypadnuteFigurky, VyhraEnum vysledokHry) {
+        posliPole(hraciePole, vypadnuteFigurky, vysledokHry);
         return null;
     }
 
-    public Figurka[][] getNovePole() {
-        return pole;
+    public ServerSprava novePole() {
+        if (update) {
+            update = false;
+            return sSparava;
+        } else {
+            return null;
+        }
     }
 
     @Override
     public void run() {
-        if (cakaj) {
-            try {
-                pole = (Figurka[][]) objectInputStream.readObject();
-                synchronized (daco) {
-                    daco.notify();
+        try {
+            synchronized (this) {
+                while (true) {
+                    if (sSparava != null) {
+                        this.wait();
+                    }
+                    sSparava = (ServerSprava) objectInputStream.readObject();
+                    update = true;
                 }
-            } catch (Exception e) {
             }
-            cakaj = false;
+        } catch (
+
+        Exception e) {
         }
     }
 }
