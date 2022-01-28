@@ -15,20 +15,22 @@ public class Gui extends JPanel implements Runnable {
     private HraciePole hraciePole;
     private MainMenuGui mainMenu;
     private Thread GuiThread = new Thread(this);
+    private float scale = 1f;
     private int offSetY = 150, offSetX = 0, vyska = 800, sirka = 800;
 
     public Gui() {
         mainMenu = new MainMenuGui(sirka, vyska,
-                offSetX, offSetY);
+                offSetX, offSetY, scale);
 
         this.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        setPreferredSize(new Dimension(2 * offSetX + sirka, 2 * offSetY + vyska - 50));
+        setPreferredSize(
+                new Dimension((int) ((2 * offSetX + sirka) * scale), (int) ((2 * offSetY + vyska - 50) * scale)));
 
         addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
                 if (mainMenu != null) {
-                    mainMenu.skontrolujHover(new Vec2(e.getX(), e.getY()));
+                    mainMenu.skontrolujHover(new Vec2(e.getX() / scale, e.getY() / scale));
                 }
                 try {
                     Thread.sleep(50L);
@@ -41,18 +43,19 @@ public class Gui extends JPanel implements Runnable {
             @Override
             public void mousePressed(java.awt.event.MouseEvent e) {
                 if (hraciePole != null) {
-                    hraciePole.skontrolujKliknutie((e.getX() - offSetX) / 100,
-                            (e.getY() - offSetY) / 100);
+                    hraciePole.skontrolujKliknutie((int) ((e.getX() - (offSetX * scale)) / (100 * scale)),
+                            (int) ((e.getY() - (offSetY * scale)) / (100 * scale)));
                 }
             }
 
             @Override
             public void mouseReleased(java.awt.event.MouseEvent e) {
                 if (hraciePole != null) {
-                    hraciePole.skontrolujOdkliknutie((e.getX() - offSetX) / 100, (e.getY() - offSetY) / 100);
+                    hraciePole.skontrolujOdkliknutie((int) ((e.getX() - (offSetX * scale)) / (100 * scale)),
+                            (int) ((e.getY() - (offSetY * scale)) / (100 * scale)));
                 } else {
                     hraciePole = mainMenu
-                            .skontrolujOdkliknutie(new Vec2(e.getX(), e.getY()));
+                            .skontrolujOdkliknutie(new Vec2(e.getX() / scale, e.getY() / scale));
                     spustiHru();
                 }
                 // repaint();
@@ -107,6 +110,8 @@ public class Gui extends JPanel implements Runnable {
                 RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_SPEED);
+
+        g2d.scale(scale, scale);
         if (hraciePole != null) {
             hraciePole.paint(g2d);
         } else {

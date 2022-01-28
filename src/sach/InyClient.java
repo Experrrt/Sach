@@ -17,7 +17,7 @@ public class InyClient implements Hrac, Runnable {
     ServerSprava sSparava;
 
     public void start() throws IOException, ClassNotFoundException {
-        s = new Socket("localhost", 4999);
+        s = new Socket("kokot", 4999);
 
         outputStream = s.getOutputStream();
         objectOutputStream = new ObjectOutputStream(outputStream);

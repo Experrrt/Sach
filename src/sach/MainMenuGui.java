@@ -10,32 +10,42 @@ import sach.AI.Bot;
 
 public class MainMenuGui {
     private int sirka, vyska, offSetX, offSetY;
+    private float scale;
     private ArrayList<Button> buttony = new ArrayList<>();
     private BufferedImage pozadieObrazok;
 
-    public MainMenuGui(int sirka, int vyska, int offSetX, int offSetY) {
+    public MainMenuGui(int sirka, int vyska, int offSetX, int offSetY, float scale) {
         this.sirka = sirka;
         this.vyska = vyska;
         this.offSetX = offSetX;
         this.offSetY = offSetY;
+        this.scale = scale;
         this.pozadieObrazok = new NacitavacObrazkov().nacitajObrazok("pozadie.png");
 
-        buttony.add(new Button((sirka + offSetX) / 2 - 150, (vyska + offSetY) / 2 - 100, 300, 100, "Hrac vs Hrac",
+        buttony.add(new Button((sirka + offSetX) / 2 - (int) (scale * 150), (vyska + offSetY) / 2 - (int) (200 * scale),
+                (int) (300 * scale), (int) (100 * scale),
+                "Hrac vs Hrac",
                 new HraciePoleGui(
                         new ArrayList<>(Arrays.asList(new Client(), new Client())), sirka, vyska, offSetX,
                         offSetY, false)));
-        buttony.add(new Button((sirka + offSetX) / 2 - 150, (vyska + offSetY) / 2 + 100, 300, 100, "Hrac vs Bot",
+        buttony.add(new Button((sirka + offSetX) / 2 - (int) (scale * 150), (vyska + offSetY) / 2 + (int) (0 * scale),
+                (int) (300 * scale), (int) (100 * scale),
+                "Hrac vs Bot",
                 new HraciePoleGui(
                         new ArrayList<>(Arrays.asList(new Bot(), new Client())), sirka, vyska, offSetX, offSetY,
                         false)));
         try {
             buttony.add(
-                    new Button((sirka + offSetX) / 2 - 150, (vyska + offSetY) / 2 + 300, 300, 100, "Multiplayer Server",
+                    new Button((sirka + offSetX) / 2 - (int) (scale * 150), (vyska + offSetY) / 2 + (int) (200 * scale),
+                            (int) (300 * scale), (int) (100 * scale),
+                            "Multiplayer Server",
                             new HraciePoleGui(
                                     new ArrayList<>(Arrays.asList(new Server())), sirka, vyska, offSetX, offSetY,
                                     true)));
             buttony.add(
-                    new Button((sirka + offSetX) / 2 - 150, (vyska + offSetY) / 2 + 500, 300, 100, "Multiplayer Join",
+                    new Button((sirka + offSetX) / 2 - (int) (scale * 150), (vyska + offSetY) / 2 + (int) (400 * scale),
+                            (int) (300 * scale), (int) (100 * scale),
+                            "Multiplayer Join",
                             new HraciePoleGui(
                                     new ArrayList<>(Arrays.asList(new InyClient())), sirka, vyska, offSetX, offSetY,
                                     true)));
@@ -68,10 +78,12 @@ public class MainMenuGui {
             g2d.setColor(button.farba);
             g2d.fill(button.rec);
             g2d.setColor(Color.WHITE);
-            g2d.setFont(new Font("SansSerif", Font.BOLD, 30));
+            g2d.setFont(new Font("SansSerif", Font.BOLD, (int) (30 * scale)));
             g2d.drawString(button.text,
-                    (int) button.rec.getBounds().getX() + 60,
-                    (int) button.rec.getBounds().getY() + 60);
+                    (int) button.rec.getBounds().getX() + (60 * scale) - ((button.text.length() > 15)
+                            ? (button.text.length())
+                            : 0),
+                    (int) button.rec.getBounds().getY() + (60 * scale));
         }
     }
 
